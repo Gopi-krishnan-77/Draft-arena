@@ -15,6 +15,7 @@ import { VerdictView } from "@/features/verdict/components/VerdictView";
 import { PublicVerdictView } from "@/features/verdict/components/PublicVerdictView";
 import { featuredVerdict, getPublicVerdict } from "@/features/verdict/public";
 import type { DraftTypeEnum } from "@/types/database";
+import type { VerdictMode, VerdictResult } from "@/features/verdict/schema";
 
 // Viewer-dependent (managers can generate, visitors read) — never prerender.
 export const dynamic = "force-dynamic";
@@ -77,6 +78,7 @@ export default async function VerdictPage({ params }: Params) {
         draftType={data.room.draftType}
         shareUrl={shareUrl}
         teamNames={[data.teams[0].name, data.teams[1].name]}
+        verdicts={data.verdicts}
       />
     );
   }
@@ -123,12 +125,14 @@ function ManagerView({
   draftType,
   shareUrl,
   teamNames,
+  verdicts,
 }: {
   roomId: string;
   name: string;
   draftType: DraftTypeEnum;
   shareUrl: string;
   teamNames?: [string, string];
+  verdicts?: Partial<Record<VerdictMode, VerdictResult>>;
 }) {
   const meta = DRAFT_TYPE_MAP[draftType];
   return (
@@ -149,7 +153,7 @@ function ManagerView({
         {teamNames && <Matchup names={teamNames} />}
       </header>
 
-      <VerdictView kind="online" roomId={roomId} shareUrl={shareUrl} />
+      <VerdictView kind="online" roomId={roomId} shareUrl={shareUrl} initialVerdicts={verdicts} />
     </div>
   );
 }

@@ -6,20 +6,28 @@ import { Loader2, Sparkles } from "lucide-react";
 import { HardButton } from "@/components/shared/HardButton";
 import type { DraftType } from "@/features/draft-room/draft-types";
 import { generateHotseatVerdict, generateRoomVerdict } from "@/features/verdict/actions";
-import type { VerdictMode, VerdictResult } from "@/features/verdict/schema";
+import { VERDICT_MODE_IDS, type VerdictMode, type VerdictResult } from "@/features/verdict/schema";
 import type { TeamInput } from "@/features/verdict/types";
 import { VerdictCard } from "@/features/verdict/components/VerdictCard";
 import { ModeSwitcher } from "@/features/verdict/components/ModeSwitcher";
 import { ShareButton } from "@/features/verdict/components/ShareButton";
 import { SaveImageButton } from "@/features/verdict/components/SaveImageButton";
+import { StylePicker } from "@/features/verdict/components/StylePicker";
+
+type Verdicts = Partial<Record<VerdictMode, VerdictResult>>;
 
 type Props =
-  | { kind: "online"; roomId: string; shareUrl: string }
+  | { kind: "online"; roomId: string; shareUrl: string; initialVerdicts?: Verdicts }
   | { kind: "hotseat"; teams: [TeamInput, TeamInput]; draftType: DraftType };
 
 export function VerdictView(props: Props) {
-  const [mode, setMode] = useState<VerdictMode>("ANALYST");
-  const [cache, setCache] = useState<Partial<Record<VerdictMode, VerdictResult>>>({});
+  const initial = props.kind === "online" ? (props.initialVerdicts ?? {}) : {};
+  // No style yet → ask first. If a verdict already exists (e.g. the other
+  // manager generated one), open on it instead of asking.
+  const [mode, setMode] = useState<VerdictMode | null>(
+    () => VERDICT_MODE_IDS.find((m) => initial[m]) ?? null
+  );
+  const [cache, setCache] = useState<Verdicts>(initial);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inFlight = useRef<Set<VerdictMode>>(new Set());
@@ -44,8 +52,10 @@ export function VerdictView(props: Props) {
   );
 
   useEffect(() => {
-    if (!cache[mode]) generate(mode);
+    if (mode && !cache[mode]) generate(mode);
   }, [mode, cache, generate]);
+
+  if (!mode) return <StylePicker onPick={setMode} />;
 
   const current = cache[mode];
 
