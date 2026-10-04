@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { LogOut, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 
 import { HardButton } from "@/components/shared/HardButton";
+import { SignOutButton } from "@/components/shared/SignOutButton";
 import { getUser, displayNameFor } from "@/features/auth/user";
 import { signOut } from "@/features/auth/actions";
 
@@ -26,13 +27,7 @@ export async function UserMenu() {
         </span>
       </span>
       <form action={signOut}>
-        <button
-          type="submit"
-          aria-label="Sign out"
-          className="inline-flex size-9 items-center justify-center rounded-full border-2 border-ink bg-surface text-on-surface-variant transition-transform hover:text-primary active:translate-y-0.5"
-        >
-          <LogOut className="size-4" />
-        </button>
+        <SignOutButton />
       </form>
     </div>
   );

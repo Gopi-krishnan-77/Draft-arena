@@ -14,7 +14,7 @@ const STEPS = [
   {
     icon: Trophy,
     title: "Get the verdict",
-    body: "The AI breaks down both teams and calls a winner — with receipts. (Coming Week 3.)",
+    body: "The AI breaks down both teams and calls a winner — with receipts. Switch between four personalities and share the result.",
   },
 ];
 

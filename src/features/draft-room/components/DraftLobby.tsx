@@ -39,6 +39,7 @@ export function DraftLobby({ roomState, isHost, currentUserId }: Props) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [running, setRunning] = useState<"start" | "cancel" | "leave" | null>(null);
 
   useEffect(() => {
     setJoinUrl(`${window.location.origin}/draft/join/${room.joinCode}`);
@@ -56,8 +57,9 @@ export function DraftLobby({ roomState, isHost, currentUserId }: Props) {
     }
   }
 
-  function run(action: () => Promise<{ error?: string }>) {
+  function run(kind: "start" | "cancel" | "leave", action: () => Promise<{ error?: string }>) {
     setError(null);
+    setRunning(kind);
     startTransition(async () => {
       const result = await action();
       if (result?.error) setError(result.error);
@@ -144,11 +146,18 @@ export function DraftLobby({ roomState, isHost, currentUserId }: Props) {
           intent="primary"
           size="lg"
           disabled={!full || pending}
-          onClick={() => run(() => startDraft(room.id))}
+          onClick={() => run("start", () => startDraft(room.id))}
           className="w-full"
         >
-          {pending ? <Loader2 className="animate-spin" /> : null}
-          {full ? "Start Draft" : "Waiting for opponent…"}
+          {pending && running === "start" ? (
+            <>
+              <Loader2 className="animate-spin" /> Starting…
+            </>
+          ) : full ? (
+            "Start Draft"
+          ) : (
+            "Waiting for opponent…"
+          )}
         </HardButton>
       ) : (
         <p className="rounded-xl border-2 border-ink bg-surface-container p-sm text-center font-display text-headline-md uppercase text-on-surface-variant">
@@ -162,19 +171,29 @@ export function DraftLobby({ roomState, isHost, currentUserId }: Props) {
           <button
             type="button"
             disabled={pending}
-            onClick={() => run(() => cancelDraft(room.id))}
+            onClick={() => run("cancel", () => cancelDraft(room.id))}
             className="inline-flex items-center gap-1 font-label-bold text-label-bold uppercase text-error underline-offset-4 hover:underline disabled:opacity-50"
           >
-            <Trash2 className="size-4" /> Cancel draft
+            {pending && running === "cancel" ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Trash2 className="size-4" />
+            )}{" "}
+            Cancel draft
           </button>
         ) : (
           <button
             type="button"
             disabled={pending}
-            onClick={() => run(() => leaveDraft(room.id))}
+            onClick={() => run("leave", () => leaveDraft(room.id))}
             className="inline-flex items-center gap-1 font-label-bold text-label-bold uppercase text-on-surface-variant underline-offset-4 hover:text-error hover:underline disabled:opacity-50"
           >
-            <DoorOpen className="size-4" /> Leave lobby
+            {pending && running === "leave" ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <DoorOpen className="size-4" />
+            )}{" "}
+            Leave lobby
           </button>
         )}
       </div>

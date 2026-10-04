@@ -1,20 +1,10 @@
 "use client";
 
 import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
 
 import { Input } from "@/components/ui/input";
-import { HardButton } from "@/components/shared/HardButton";
+import { SubmitButton } from "@/components/shared/SubmitButton";
 import { joinDraft, type ActionState } from "@/features/draft-room/actions";
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <HardButton type="submit" intent="accent" size="lg" disabled={pending} className="w-full">
-      {pending ? "Joining…" : "Join Draft"}
-    </HardButton>
-  );
-}
 
 interface Props {
   code: string;
@@ -38,7 +28,9 @@ export function JoinDraftForm({ code, initialName }: Props) {
           {state.error}
         </p>
       )}
-      <SubmitButton />
+      <SubmitButton intent="accent" size="lg" className="w-full" pendingLabel="Joining…">
+        Join Draft
+      </SubmitButton>
     </form>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,8 @@ export function CreateDraftForm({ initialType }: { initialType?: DraftType }) {
   const [managerA, setManagerA] = useState("");
   const [managerB, setManagerB] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
+  // Keeps the button spinning until the draft room has actually rendered.
+  const [pending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -42,7 +44,7 @@ export function CreateDraftForm({ initialType }: { initialType?: DraftType }) {
       a: parsed.data.managerA,
       b: parsed.data.managerB,
     });
-    router.push(`/draft/play?${params.toString()}`);
+    startTransition(() => router.push(`/draft/play?${params.toString()}`));
   }
 
   return (
@@ -132,8 +134,16 @@ export function CreateDraftForm({ initialType }: { initialType?: DraftType }) {
         </div>
       </div>
 
-      <HardButton type="submit" intent="primary" size="lg" className="w-full sm:w-auto">
-        Start Draft <ArrowRight />
+      <HardButton type="submit" intent="primary" size="lg" disabled={pending} className="w-full sm:w-auto">
+        {pending ? (
+          <>
+            <Loader2 className="animate-spin" /> Setting up…
+          </>
+        ) : (
+          <>
+            Start Draft <ArrowRight />
+          </>
+        )}
       </HardButton>
     </form>
   );

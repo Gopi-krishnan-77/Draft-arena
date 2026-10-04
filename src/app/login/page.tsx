@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { HardButton } from "@/components/shared/HardButton";
+import { SubmitButton } from "@/components/shared/SubmitButton";
 import { JerseyBadge } from "@/components/shared/JerseyBadge";
 import { isSupabaseConfigured } from "@/lib/env";
 import { safeInternalPath } from "@/lib/utils";
@@ -54,9 +55,9 @@ export default async function LoginPage({
           <>
             <form action={signInWithGoogle}>
               <input type="hidden" name="next" value={dest} />
-              <HardButton type="submit" intent="outline" className="w-full">
+              <SubmitButton intent="outline" className="w-full" pendingLabel="Redirecting to Google…">
                 <GoogleMark /> Continue with Google
-              </HardButton>
+              </SubmitButton>
             </form>
 
             <div className="flex items-center gap-xs">
@@ -69,9 +70,9 @@ export default async function LoginPage({
 
             <form action={signInAsGuest}>
               <input type="hidden" name="next" value={dest} />
-              <HardButton type="submit" intent="primary" className="w-full">
+              <SubmitButton intent="primary" className="w-full" pendingLabel="Signing in…">
                 Play as Guest
-              </HardButton>
+              </SubmitButton>
             </form>
 
             <p className="text-center font-sans text-xs text-on-surface-variant">

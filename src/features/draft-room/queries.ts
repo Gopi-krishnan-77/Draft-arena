@@ -90,18 +90,21 @@ export async function getRoomByCode(code: string) {
 export async function getRoomState(roomId: string): Promise<RoomState | null> {
   const supabase = await createClient();
 
-  const { data: room } = await supabase
-    .from("draft_rooms")
-    .select("*")
-    .eq("id", roomId)
-    .maybeSingle();
+  // Independent reads — fetch in parallel rather than three sequential round trips.
+  const [{ data: room }, { data: partRows }, { data: pickRows }] = await Promise.all([
+    supabase.from("draft_rooms").select("*").eq("id", roomId).maybeSingle(),
+    supabase
+      .from("draft_participants")
+      .select("id,user_id,display_name,draft_position")
+      .eq("room_id", roomId)
+      .order("draft_position"),
+    supabase
+      .from("draft_picks")
+      .select("pick_number,round,participant_id,player_id,created_at")
+      .eq("room_id", roomId)
+      .order("pick_number"),
+  ]);
   if (!room) return null;
-
-  const { data: partRows } = await supabase
-    .from("draft_participants")
-    .select("id,user_id,display_name,draft_position")
-    .eq("room_id", roomId)
-    .order("draft_position");
 
   const participants: RoomParticipant[] = (partRows ?? []).map((p) => ({
     id: p.id,
@@ -109,12 +112,6 @@ export async function getRoomState(roomId: string): Promise<RoomState | null> {
     displayName: p.display_name,
     position: p.draft_position,
   }));
-
-  const { data: pickRows } = await supabase
-    .from("draft_picks")
-    .select("pick_number,round,participant_id,player_id,created_at")
-    .eq("room_id", roomId)
-    .order("pick_number");
 
   const positionFor = new Map(participants.map((p) => [p.id, p.position]));
   const picks: RoomPick[] = (pickRows ?? []).map((pk) => ({

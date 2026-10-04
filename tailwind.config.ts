@@ -138,9 +138,14 @@ const config: Config = {
           "0%, 100%": { opacity: "1", transform: "scale(1)" },
           "50%": { opacity: "0.6", transform: "scale(1.04)" },
         },
+        "nav-progress": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(300%)" },
+        },
       },
       animation: {
         "pulse-ring": "pulse-ring 1.4s ease-in-out infinite",
+        "nav-progress": "nav-progress 1.1s ease-in-out infinite",
       },
     },
   },

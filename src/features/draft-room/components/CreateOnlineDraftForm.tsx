@@ -1,26 +1,16 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { useFormStatus } from "react-dom";
 import { ArrowRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { HardButton } from "@/components/shared/HardButton";
+import { SubmitButton } from "@/components/shared/SubmitButton";
 import { JerseyBadge } from "@/components/shared/JerseyBadge";
 import { DRAFT_TYPES, type DraftType } from "@/features/draft-room/draft-types";
 import { createDraft, type ActionState } from "@/features/draft-room/actions";
 
 const TONE_MAP = { primary: "primary", secondary: "secondary", accent: "accent" } as const;
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <HardButton type="submit" intent="primary" size="lg" disabled={pending} className="w-full sm:w-auto">
-      {pending ? "Creating…" : "Create Room"} <ArrowRight />
-    </HardButton>
-  );
-}
 
 interface Props {
   initialType?: DraftType;
@@ -79,7 +69,9 @@ export function CreateOnlineDraftForm({ initialType, initialName }: Props) {
         </p>
       )}
 
-      <SubmitButton />
+      <SubmitButton intent="primary" size="lg" className="w-full sm:w-auto" pendingLabel="Creating room…">
+        Create Room <ArrowRight />
+      </SubmitButton>
       <p className="font-sans text-sm text-on-surface-variant">
         You&apos;ll get a shareable link to invite your opponent on the next screen.
       </p>
