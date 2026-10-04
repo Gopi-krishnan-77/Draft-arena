@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, Inter } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/shared/AppShell";
+import { SITE_URL } from "@/lib/env";
 
 const barlow = Barlow_Condensed({
   subsets: ["latin"],
@@ -18,9 +19,18 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  // Resolves relative link-preview image URLs to absolute ones.
+  metadataBase: new URL(SITE_URL),
   title: "Draft Arena — Pick your XI. Settle the debate.",
   description:
     "Draft your all-time football XI head-to-head, then get a brutal AI verdict on who actually wins.",
+  openGraph: {
+    siteName: "Draft Arena",
+    type: "website",
+    title: "Draft Arena — Pick your XI. Settle the debate.",
+    description: "Draft your all-time football XI head-to-head, then get a brutal AI verdict on who wins.",
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {

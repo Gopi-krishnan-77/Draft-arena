@@ -34,7 +34,9 @@ Open **SQL Editor** and run these files **in order** (paste contents, Run):
 4. `supabase/migrations/0004_analyses_rls.sql` — AI verdict write policy
 5. `supabase/migrations/0005_week4.sql` — **realtime, 60s pick timer + auto-draft,
    server-side formation rules, leave/cancel** (Week 4 — required for live play)
-6. `supabase/seed.sql` — the player pool (re-run any time the pool changes; it wipes + reloads)
+6. `supabase/migrations/0006_public_verdict.sql` — **public verdict pages + link previews**
+   (lets anyone with the link see a finished draft's verdict, no sign-in)
+7. `supabase/seed.sql` — the player pool (re-run any time the pool changes; it wipes + reloads)
 
 > Regenerate the seed any time the pool changes: `node scripts/generate-seed.mjs`.
 

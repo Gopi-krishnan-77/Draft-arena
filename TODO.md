@@ -14,13 +14,15 @@ Running list of flaws, deferred work, and polish. Grouped by priority/phase.
 - [x] **Tests.** Vitest suite for snake order + formation rules (`npm test`).
 - [x] **Adversarial security/race review (14 findings fixed).** Start/leave are now locked RPCs (`start_draft`/`leave_room` — closes a race that could brick a draft with one player); the host's unrestricted room-UPDATE policy was dropped; verdict inserts require a COMPLETED room; open-redirect via `//host` closed; rate-limit keys use the trusted proxy hop; auto-pick retries transient failures instead of dying; the pitch keeps your swaps across realtime refreshes; verdict schema rejects duplicate-position replies.
 
+## ✅ Done (sharing loop)
+- [x] **Public verdict page + link previews.** `/draft/[id]/verdict` is readable without signing in (via the `get_public_verdict()` RPC, migration 0006 — exposes names, squads and cached verdicts only, never join codes or user ids). Visitors see the generated modes, both XIs on the pitch, and a "Challenge a friend" CTA; managers keep the generate-on-demand view. Shared links unfurl with a generated 1200×630 card (headline, win odds, AI pick); every other page gets a site-wide card.
+
 ## 🟡 Deferred (post-launch)
 - [ ] **Formation arrangement isn't saved.** Post-draft pitch swaps are local-only (reset on reload; opponent doesn't see them). Persist to DB if users ask for it.
 - [ ] **In-progress leave/forfeit.** Leaving is lobby-only; mid-draft abandonment is handled by the auto-pick clock rather than an explicit "forfeit" button.
 - [ ] **Rate limiter is per-instance.** In-memory Map resets on redeploy and doesn't share across serverless instances. Move to Upstash/Postgres if abuse appears.
 - [ ] **A participant can still hand-craft a verdict row for their own COMPLETED room** (the insert policy validates room + status, not the JSON shape). Only self-vandalism; move inserts into a SECURITY DEFINER RPC if it ever matters.
 - [ ] **Realtime auth on token refresh.** Very long sessions may need a channel resubscribe after token rotation; the 20s fallback refresh masks this. Revisit if users report stale rooms.
-- [ ] **Verdict image on shared link.** `/draft/[id]/verdict` renders for any signed-in user, but no OG image/meta for social embeds yet.
 
 ## 🟢 Polish / nice-to-have
 - [ ] **Player data is best-effort.** Ratings/clubs approximate; fix any miscategorized players in `scripts/build-players.mjs` (→ rebuild + re-seed).
@@ -30,6 +32,7 @@ Running list of flaws, deferred work, and polish. Grouped by priority/phase.
 
 ## 🔧 Setup reminders (see SETUP.md)
 - [ ] Run **`supabase/migrations/0005_week4.sql`** in the SQL editor (required for realtime, timer, auto-draft, leave/cancel).
+- [ ] Run **`supabase/migrations/0006_public_verdict.sql`** (public verdict pages + link previews; until then verdicts stay manager-only).
 - [x] `OPENROUTER_API_KEY` + free `OPENROUTER_MODEL` chain in `.env.local` (paid models blocked by the app).
 - [ ] Finish Google OAuth provider config + redirect URLs if not done.
 - [ ] Deploy: SETUP.md §7 (Vercel env vars + Supabase prod URLs).

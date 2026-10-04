@@ -133,6 +133,10 @@ export interface Database {
         Args: { p_room_id: string };
         Returns: undefined;
       };
+      get_public_verdict: {
+        Args: { p_room_id: string };
+        Returns: Json;
+      };
     };
     Enums: {
       draft_type: DraftTypeEnum;

@@ -38,7 +38,7 @@ export interface RoomState {
   serverNow: string;
 }
 
-function rowToPlayer(row: {
+export function rowToPlayer(row: {
   id: string;
   name: string;
   role: Player["role"];

@@ -5,19 +5,23 @@ interface Props {
   mode: VerdictMode;
   onModeChange: (mode: VerdictMode) => void;
   disabled?: boolean;
+  /** Only these modes can be selected (others render disabled). Defaults to all. */
+  available?: readonly VerdictMode[];
 }
 
 /** Tabs to flip between the four verdict personalities. */
-export function ModeSwitcher({ mode, onModeChange, disabled }: Props) {
+export function ModeSwitcher({ mode, onModeChange, disabled, available }: Props) {
   return (
     <div className="grid grid-cols-2 gap-xs sm:grid-cols-4">
       {VERDICT_MODES.map((m) => {
         const active = m.id === mode;
+        const unavailable = available ? !available.includes(m.id) : false;
         return (
           <button
             key={m.id}
             type="button"
-            disabled={disabled}
+            disabled={disabled || unavailable}
+            title={unavailable ? "Not generated for this draft yet" : undefined}
             onClick={() => onModeChange(m.id)}
             aria-pressed={active}
             className={cn(
