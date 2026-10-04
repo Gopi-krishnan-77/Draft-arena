@@ -6,7 +6,7 @@ import { VERDICT_MODE_IDS, type VerdictMode, type VerdictResult } from "@/featur
 import { VerdictCard } from "@/features/verdict/components/VerdictCard";
 import { ModeSwitcher } from "@/features/verdict/components/ModeSwitcher";
 import { ShareButton } from "@/features/verdict/components/ShareButton";
-import { SaveImageButton } from "@/features/verdict/components/SaveImageButton";
+import { SaveImageButton } from "@/components/shared/SaveImageButton";
 
 interface Props {
   verdicts: Partial<Record<VerdictMode, VerdictResult>>;

@@ -53,14 +53,22 @@ function Football({ className }: { className?: string }) {
   );
 }
 
-/** A football bouncing on the spot, with a ground shadow. Static when reduced motion is on. */
-export function BouncingBall({ className }: { className?: string }) {
+/**
+ * A football bouncing on the spot, with a ground shadow. Static when reduced
+ * motion is on. `onDark` lightens the shadow so it reads on dark panels.
+ */
+export function BouncingBall({ className, onDark = false }: { className?: string; onDark?: boolean }) {
   return (
     <div className={cn("flex h-28 w-16 flex-col items-center justify-end", className)}>
       <div className="origin-bottom animate-ball-bounce motion-reduce:animate-none">
         <Football className="size-14 animate-ball-spin motion-reduce:animate-none" />
       </div>
-      <div className="mt-1 h-2 w-12 animate-ball-shadow rounded-[50%] bg-ink motion-reduce:animate-none" />
+      <div
+        className={cn(
+          "mt-1 h-2 w-12 animate-ball-shadow rounded-[50%] motion-reduce:animate-none",
+          onDark ? "bg-surface" : "bg-ink"
+        )}
+      />
     </div>
   );
 }

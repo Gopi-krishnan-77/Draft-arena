@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
+import { BouncingBall } from "@/components/shared/BouncingBall";
 import { HardButton } from "@/components/shared/HardButton";
 import type { DraftType } from "@/features/draft-room/draft-types";
 import { generateHotseatVerdict, generateRoomVerdict } from "@/features/verdict/actions";
@@ -11,7 +12,7 @@ import type { TeamInput } from "@/features/verdict/types";
 import { VerdictCard } from "@/features/verdict/components/VerdictCard";
 import { ModeSwitcher } from "@/features/verdict/components/ModeSwitcher";
 import { ShareButton } from "@/features/verdict/components/ShareButton";
-import { SaveImageButton } from "@/features/verdict/components/SaveImageButton";
+import { SaveImageButton } from "@/components/shared/SaveImageButton";
 import { StylePicker } from "@/features/verdict/components/StylePicker";
 
 type Verdicts = Partial<Record<VerdictMode, VerdictResult>>;
@@ -78,7 +79,7 @@ export function VerdictView(props: Props) {
         </>
       ) : loading ? (
         <div className="flex flex-col items-center gap-sm rounded-xl border-2 border-ink bg-on-background p-xl text-center shadow-hard">
-          <Loader2 className="size-8 animate-spin text-tertiary-fixed" />
+          <BouncingBall onDark />
           <p className="font-display text-headline-md uppercase text-surface">The AI is judging…</p>
           <p className="font-sans text-sm text-surface/70">
             Weighing both XIs. This can take up to 30–40 seconds.
