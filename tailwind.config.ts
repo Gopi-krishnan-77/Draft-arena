@@ -142,10 +142,24 @@ const config: Config = {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(300%)" },
         },
+        // Football loader: rise (ease-out), fall (ease-in), squash on landing.
+        "ball-bounce": {
+          "0%, 100%": { transform: "translateY(0) scale(1.15, 0.85)", animationTimingFunction: "ease-out" },
+          "15%": { transform: "translateY(-12px) scale(0.95, 1.05)" },
+          "50%": { transform: "translateY(-64px) scale(1, 1)", animationTimingFunction: "ease-in" },
+          "85%": { transform: "translateY(-6px) scale(0.95, 1.05)" },
+        },
+        "ball-shadow": {
+          "0%, 100%": { transform: "scaleX(1)", opacity: "0.35" },
+          "50%": { transform: "scaleX(0.45)", opacity: "0.12" },
+        },
       },
       animation: {
         "pulse-ring": "pulse-ring 1.4s ease-in-out infinite",
         "nav-progress": "nav-progress 1.1s ease-in-out infinite",
+        "ball-bounce": "ball-bounce 0.9s infinite",
+        "ball-shadow": "ball-shadow 0.9s infinite",
+        "ball-spin": "spin 1.4s linear infinite",
       },
     },
   },

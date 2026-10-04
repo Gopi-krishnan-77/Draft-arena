@@ -32,7 +32,7 @@ Running list of flaws, deferred work, and polish. Grouped by priority/phase.
 
 ## 🔧 Setup reminders (see SETUP.md)
 - [ ] Run **`supabase/migrations/0005_week4.sql`** in the SQL editor (required for realtime, timer, auto-draft, leave/cancel).
-- [ ] Run **`supabase/migrations/0006_public_verdict.sql`** (public verdict pages + link previews; until then verdicts stay manager-only).
+- [x] Run **`supabase/migrations/0006_public_verdict.sql`** (public verdict pages + link previews).
 - [x] `OPENROUTER_API_KEY` + free `OPENROUTER_MODEL` chain in `.env.local` (paid models blocked by the app).
 - [ ] Finish Google OAuth provider config + redirect URLs if not done.
 - [ ] Deploy: SETUP.md §7 (Vercel env vars + Supabase prod URLs).
