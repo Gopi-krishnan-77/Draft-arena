@@ -3,6 +3,7 @@ import { DRAFT_TYPE_MAP } from "@/features/draft-room/draft-types";
 import type { ChatMessage } from "@/features/verdict/openrouter";
 import type { VerdictMode } from "@/features/verdict/schema";
 import type { TeamInput } from "@/features/verdict/types";
+import type { MatchResult } from "@/features/verdict/engine";
 
 const PERSONA: Record<VerdictMode, string> = {
   ANALYST:
@@ -33,22 +34,44 @@ function describeTeam(team: TeamInput): string {
   return `Team ${team.position} — "${team.name}":\n${roster}`;
 }
 
+function describeResult(teams: [TeamInput, TeamInput], match: MatchResult): string {
+  const line = (pos: 0 | 1) => {
+    const r = match.ratings[pos];
+    const f = (n: number) => n.toFixed(1);
+    return `  - Team ${pos} "${teams[pos].name}": GK ${f(r.lines.GK)}, DEF ${f(r.lines.DEF)}, MID ${f(r.lines.MID)}, FWD ${f(r.lines.FWD)} → strength ${f(r.strength)}, win chance ${match.percents[pos]}%`;
+  };
+  const winner = teams[match.winnerPosition].name;
+  return `Match engine result (FINAL — do not change it):
+${line(0)}
+${line(1)}
+  - Winner: Team ${match.winnerPosition} "${winner}"`;
+}
+
+/** Lines that break the "everyone at their peak" rule — used to trigger a rewrite. */
+export const AGE_TALK = /\b(ag(e)?ing|aged|old(er)?|veteran|elderly|past (his|their) (prime|best)|twilight|declin\w*|slowed|slowing|legs (have )?(gone|slowed)|over the hill|creaking|retire\w*)\b/i;
+
+export const PRIME_RULE =
+  "Every player is judged at their absolute PEAK — the prime-age, best-form version of them. Never mention age, ageing, veterans, decline, slowing legs, fitness worries or career stage.";
+
 export function buildMessages(
   teams: [TeamInput, TeamInput],
   draftType: DraftType,
-  mode: VerdictMode
+  mode: VerdictMode,
+  match: MatchResult
 ): ChatMessage[] {
   const typeLabel = DRAFT_TYPE_MAP[draftType]?.label ?? draftType;
 
   const system = `${PERSONA[mode]}
 
-You are judging a head-to-head football draft (mode: "${typeLabel}"). Two managers each drafted an XI. Compare the two squads and deliver a verdict.
+You are judging a head-to-head football draft (mode: "${typeLabel}"). Two managers each drafted an XI. A match engine has already rated both squads line by line and decided the result. Your job is to explain it: compare the two squads and write a verdict that AGREES with the engine's winner and odds.
+
+${PRIME_RULE}
 
 Respond with ONLY a JSON object (no markdown, no prose) matching EXACTLY this shape:
 {
   "headline": string,                       // ONE punchy, shareable line in your voice
-  "predictedWinnerPosition": 0 | 1,         // which team wins
-  "winProbability": [                       // must total 100
+  "predictedWinnerPosition": 0 | 1,         // copy the engine's winner
+  "winProbability": [                       // copy the engine's win chances
     { "position": 0, "percent": number },
     { "position": 1, "percent": number }
   ],
@@ -65,11 +88,13 @@ Respond with ONLY a JSON object (no markdown, no prose) matching EXACTLY this sh
   ]
 }
 
-Rules: use the exact player names provided; keep the persona consistent throughout (including strengths/weaknesses/reasons, not just the headline); winProbability percents must be integers that sum to 100.`;
+Rules: use the exact player names provided; the headline and analysis must back the engine's winner (a close margin can be called close, but never pick the other side); ground strengths and weaknesses in the squads and line ratings; keep the persona consistent throughout (including strengths/weaknesses/reasons, not just the headline); ${PRIME_RULE}`;
 
   const user = `${describeTeam(teams[0])}
 
 ${describeTeam(teams[1])}
+
+${describeResult(teams, match)}
 
 Deliver your verdict as the JSON object described.`;
 

@@ -2,7 +2,8 @@ import "server-only";
 
 import type { DraftType } from "@/features/draft-room/draft-types";
 import { callOpenRouter } from "@/features/verdict/openrouter";
-import { buildMessages, temperatureFor } from "@/features/verdict/prompt";
+import { AGE_TALK, PRIME_RULE, buildMessages, temperatureFor } from "@/features/verdict/prompt";
+import { simulateMatch, type MatchResult } from "@/features/verdict/engine";
 import { verdictResultSchema, type VerdictMode, type VerdictResult } from "@/features/verdict/schema";
 import type { TeamInput } from "@/features/verdict/types";
 
@@ -25,25 +26,30 @@ function tryParse(raw: string): VerdictResult | null {
   return null;
 }
 
-/** Force win probabilities to sum to 100 and keep the winner consistent. */
-function normalize(result: VerdictResult): VerdictResult {
-  const [a, b] = result.winProbability;
-  let pa = a.percent;
-  let pb = b.percent;
-  if (pa + pb !== 100) {
-    const total = pa + pb || 1;
-    pa = Math.round((pa / total) * 100);
-    pb = 100 - pa;
-  }
-  const winner = pa === pb ? result.predictedWinnerPosition : pa > pb ? a.position : b.position;
+/** The engine owns the result: stamp its winner and odds over whatever the model echoed. */
+function applyMatch(result: VerdictResult, match: MatchResult): VerdictResult {
   return {
     ...result,
+    predictedWinnerPosition: match.winnerPosition,
     winProbability: [
-      { position: a.position, percent: pa },
-      { position: b.position, percent: pb },
+      { position: 0, percent: match.percents[0] },
+      { position: 1, percent: match.percents[1] },
     ],
-    predictedWinnerPosition: winner,
   };
+}
+
+/** True if any prose in the verdict talks about age / decline. */
+function mentionsAge(result: VerdictResult): boolean {
+  const text = [
+    result.headline,
+    ...result.teams.flatMap((t) => [
+      ...t.strengths,
+      ...t.weaknesses,
+      t.bestPick.reason,
+      t.worstPick.reason,
+    ]),
+  ].join(" \n ");
+  return AGE_TALK.test(text);
 }
 
 /** Generate a verdict for two squads. Retries once on malformed output. */
@@ -52,7 +58,8 @@ export async function runVerdict(
   draftType: DraftType,
   mode: VerdictMode
 ): Promise<VerdictResult> {
-  const messages = buildMessages(teams, draftType, mode);
+  const match = simulateMatch(teams);
+  const messages = buildMessages(teams, draftType, mode, match);
   const temperature = temperatureFor(mode);
 
   let raw = await callOpenRouter(messages, { temperature });
@@ -67,5 +74,22 @@ export async function runVerdict(
   }
 
   if (!parsed) throw new Error("The AI returned malformed output");
-  return normalize(parsed);
+
+  // One rewrite if it slipped into "ageing veteran" talk; keep the original if
+  // the rewrite fails to parse or is no better.
+  if (mentionsAge(parsed)) {
+    const retry = tryParse(
+      await callOpenRouter(
+        [
+          ...messages,
+          { role: "assistant", content: raw },
+          { role: "user", content: `You described players as ageing or declining. ${PRIME_RULE} Rewrite the full JSON with every such reference removed.` },
+        ],
+        { temperature }
+      ).catch(() => "")
+    );
+    if (retry && !mentionsAge(retry)) parsed = retry;
+  }
+
+  return applyMatch(parsed, match);
 }

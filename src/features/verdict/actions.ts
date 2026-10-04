@@ -134,10 +134,22 @@ export async function generateRoomVerdict(roomId: string, mode: VerdictMode): Pr
     return verdictError(e);
   }
 
-  // Persist (ignore a rare unique-violation race — the verdict is still returned).
-  await supabase
+  const { error: insertError } = await supabase
     .from("draft_analyses")
     .insert({ room_id: roomId, mode, model: getModelName(), result: result as unknown as Json });
+
+  // Both managers often open the verdict at once and generate in parallel. The
+  // first save wins (unique room+mode); everyone else gets THAT verdict, so the
+  // two managers never see different results for the same draft.
+  if (insertError) {
+    const { data: stored } = await supabase
+      .from("draft_analyses")
+      .select("result")
+      .eq("room_id", roomId)
+      .eq("mode", mode)
+      .maybeSingle();
+    if (stored) return { result: stored.result as unknown as VerdictResult };
+  }
 
   return { result };
 }
